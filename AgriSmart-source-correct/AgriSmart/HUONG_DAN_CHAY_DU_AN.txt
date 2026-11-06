@@ -1,0 +1,201 @@
+HƯỚNG DẪN CÀI ĐẶT VÀ CHẠY DỰ ÁN AGRISMART
+==========================================
+
+Tài liệu này dành cho thành viên nhóm muốn cài đặt và chạy bản thử nghiệm trên Windows. Mặc định, mỗi thành viên chạy dự án trên máy của mình (localhost).
+
+QUAN TRỌNG: Không gửi các file backend/.env, frontend/.env.local, mật khẩu database, JWT_SECRET hoặc Gemini API key cho nhóm. Mỗi máy tự tạo cấu hình riêng. Không dùng dữ liệu thanh toán/tài khoản ngân hàng thật khi thử nghiệm.
+
+1. CẤU TRÚC DỰ ÁN
+-----------------
+- frontend/: giao diện Next.js, mặc định http://localhost:3000
+- backend/: API Express, mặc định http://localhost:4000
+- database/: schema và migration MySQL
+- ai-service/: dịch vụ gợi ý theo quy tắc Python/FastAPI, mặc định http://localhost:8001
+
+Frontend, backend và MySQL cần chạy để thử các luồng mua bán. AI service là tùy chọn; nếu không chạy, gợi ý sản phẩm có phương án dự phòng. Gemini là tùy chọn riêng và cần API key.
+
+2. YÊU CẦU CÀI ĐẶT
+------------------
+- Windows 10/11, PowerShell hoặc Windows Terminal.
+- Node.js phiên bản 20.9 trở lên và npm. Kiểm tra:
+    node --version
+    npm --version
+- MySQL Server đang chạy (khuyến nghị MySQL 8.x) và tài khoản có quyền tạo/cập nhật database.
+- Python 3.10 trở lên nếu muốn chạy AI service.
+
+Nếu Node.js thấp hơn 20.9, hãy cài Node.js LTS phù hợp rồi mở lại terminal.
+
+3. MỞ SOURCE VÀ TERMINAL
+------------------------
+Giải nén/clone toàn bộ thư mục dự án. Mở PowerShell tại thư mục gốc, nơi nhìn thấy các thư mục frontend, backend, ai-service và database. Kiểm tra:
+    Get-ChildItem
+
+Mỗi dịch vụ cần một terminal riêng và terminal phải được giữ mở trong khi thử nghiệm.
+
+4. TẠO DATABASE MYSQL
+---------------------
+Trước tiên, bật MySQL Server.
+
+Cách dùng MySQL Workbench:
+1) Kết nối MySQL local.
+2) Mở file database/schema.sql trong source.
+3) Chạy toàn bộ file. File tạo database agrismart, các bảng và danh mục ban đầu.
+
+Hoặc nếu lệnh mysql đã có trong PATH, chạy từ thư mục gốc bằng PowerShell:
+    Get-Content .\database\schema.sql -Raw | mysql --default-character-set=utf8mb4 -u root -p
+Nhập mật khẩu MySQL khi được hỏi.
+
+Không chạy lệnh reset/drop database trên database đang có dữ liệu cần giữ. Mỗi thành viên nên dùng database thử nghiệm riêng.
+
+5. CẤU HÌNH VÀ CHẠY BACKEND
+---------------------------
+Mở Terminal 1 tại thư mục gốc:
+    cd backend
+    npm ci
+    Copy-Item .env.example .env
+    notepad .env
+
+Trong backend/.env, cập nhật các giá trị cần thiết:
+    DB_HOST=localhost
+    DB_PORT=3306
+    DB_USER=root
+    DB_PASSWORD=MAT_KHAU_MYSQL_CUA_BAN
+    DB_NAME=agrismart
+    JWT_SECRET=CHUOI_NGAU_NHIEN_DAI_RIENG_CHO_MAY_NAY
+    CLIENT_ORIGIN=http://localhost:3000
+    AI_SERVICE_URL=http://localhost:8001
+
+Thay DB_PASSWORD và JWT_SECRET bằng giá trị riêng trên máy. Không dùng chuỗi bí mật mẫu và không commit/gửi backend/.env.
+
+Chạy cập nhật schema:
+    npm run migrate
+
+Tạo tài khoản quản trị (tùy chọn, chỉ khi cần thử /admin):
+1) Thêm vào backend/.env các biến sau và điền thông tin riêng. Mật khẩu phải có ít nhất 12 ký tự:
+    BOOTSTRAP_ADMIN_NAME=Quản trị viên
+    BOOTSTRAP_ADMIN_EMAIL=admin@example.com
+    BOOTSTRAP_ADMIN_PASSWORD=MAT_KHAU_RIENG_DAI_TU_12_KY_TU
+2) Chạy một lần:
+    npm run seed
+
+Lệnh seed này tạo tài khoản admin theo thông tin vừa cấu hình; nó không tạo tài khoản người mua/người bán. Người mua và người bán có thể đăng ký trên giao diện.
+
+Khởi động API:
+    npm run dev
+
+Kiểm tra bằng trình duyệt:
+    http://localhost:4000/api/health
+Kết quả mong đợi có status ok. Có thể kiểm tra thêm:
+    http://localhost:4000/api/categories
+    http://localhost:4000/api/products
+
+Giữ Terminal 1 mở.
+
+6. DỮ LIỆU DEMO ĐỂ THỬ (TÙY CHỌN)
+---------------------------------
+Database mới có danh mục nhưng có thể chưa có sản phẩm. Nếu muốn thêm dữ liệu mẫu, chỉ dùng database thử nghiệm có thể xóa/tạo lại; tuyệt đối không dùng database dữ liệu thật.
+
+Mở terminal riêng tại thư mục gốc:
+    cd backend
+    $env:ALLOW_DEMO_SEED='true'
+    npm run seed:demo
+
+Lệnh thêm sản phẩm và tài khoản demo. Thông tin đăng nhập demo được in ra terminal sau khi chạy. Chỉ dùng các tài khoản đó trong database thử nghiệm. Không bật ALLOW_DEMO_SEED trên môi trường production. Nếu không cần dữ liệu mẫu, bỏ qua bước này.
+
+7. CHẠY AI SERVICE (TÙY CHỌN)
+------------------------------
+Mở Terminal 2 tại thư mục gốc:
+    cd ai-service
+    py -m venv .venv
+    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+    .\.venv\Scripts\python.exe -m uvicorn main:app --reload --port 8001
+
+Nếu lệnh py không có, thử dùng python thay cho py. Không cần kích hoạt môi trường ảo nếu gọi uvicorn qua đường dẫn .venv\Scripts\python.exe như trên.
+
+Kiểm tra:
+    http://localhost:8001/health
+
+Nếu bỏ qua dịch vụ này, API vẫn có gợi ý dự phòng theo danh mục và tồn kho.
+
+Gemini là tùy chọn riêng: nếu nhóm được cấp API key, người được phép giữ key có thể tự thêm GEMINI_API_KEY vào backend/.env. Không dán key vào mã frontend, tài liệu này, chat nhóm, Git hoặc video demo. Không có key thì phần hỏi đáp cần Gemini không hoạt động; các phần khác vẫn có thể thử.
+
+8. CẤU HÌNH VÀ CHẠY FRONTEND
+----------------------------
+Mở Terminal 3 tại thư mục gốc:
+    cd frontend
+    npm ci
+    Copy-Item .env.local.example .env.local
+    notepad .env.local
+
+Đảm bảo frontend/.env.local có:
+    NEXT_PUBLIC_API_URL=http://localhost:4000/api
+
+Khởi động giao diện:
+    npm run dev
+
+Mở trình duyệt tại:
+    http://localhost:3000
+
+Giữ Terminal 3 mở. Khi phát triển, dùng npm run dev. Không chạy npm run build cùng lúc với next dev/next start trên cùng thư mục .next. Nếu cần chạy bản production, dừng tiến trình Next cũ, chạy npm run build rồi npm run start.
+
+9. CÁC LUỒNG CÓ THỂ THỬ
+------------------------
+- Landing và các trang giới thiệu: vào http://localhost:3000. Các mục Tính năng, Người bán, Người mua, AI AgriSmart và Chính sách mở trang thông tin, không phải trang thao tác.
+- Người mua: đăng ký tài khoản, đăng nhập, xem sản phẩm, giỏ hàng và đơn hàng.
+- Người bán: đăng ký/tạo gian hàng và nhập thông tin. Gian hàng mới có thể ở trạng thái chờ duyệt; sản phẩm chưa được duyệt sẽ không hiển thị công khai.
+- Admin: nếu đã tạo tài khoản ở bước 5, mở http://localhost:3000/admin và đăng nhập bằng tài khoản bootstrap.
+- Chuyển khoản: chỉ hiển thị đúng thông tin khi các trường BANK_* trong backend/.env được cấu hình. Dùng dữ liệu giả lập khi demo, không thử chuyển tiền thật.
+- Tự đối soát SePay (đã có receiver trong backend): sau khi liên kết MB trong SePay, tạo webhook nhận giao dịch tiền vào, định dạng JSON, bảo mật HMAC-SHA256. URL callback phải là URL HTTPS công khai của backend, kết thúc bằng /api/payments/sepay/webhook; localhost không nhận được callback Internet.
+- Thêm secret HMAC webhook vào backend/.env với tên SEPAY_WEBHOOK_SECRET. BANK_ACCOUNT_NO phải là đúng tài khoản đã liên kết SePay. Không gửi secret này qua chat, không commit file .env.
+- QR thanh toán theo từng đơn hiện điền số tiền và nội dung AGRISMART <mã đơn>. Webhook chỉ tự xác nhận khi đúng tài khoản nhận, đúng mã đơn, đúng số tiền, giao dịch là tiền vào và đơn chưa hết hạn 5 phút. Không cần thay bằng ảnh QR tĩnh.
+- Chạy npm run migrate sau khi nhận phiên bản source có migration SePay. Giao dịch trùng được bỏ qua; giao dịch sai số tiền, không tìm thấy đơn hoặc đến sau hạn được lưu trong payment_webhook_events và không tự đánh dấu đã trả.
+- Để thử webhook, backend phải được triển khai trên máy chủ có HTTPS và cấu hình URL trên dashboard SePay. API local chỉ dùng phát triển; không đưa secret ngân hàng vào frontend.
+- AI: gợi ý theo quy tắc không cần Gemini; hỏi đáp Gemini cần backend có API key. Thông tin truy xuất do người bán khai báo không đồng nghĩa với xác minh độc lập.
+
+10. THỨ TỰ MỞ DỊCH VỤ MỖI LẦN CHẠY
+-----------------------------------
+1) Bật MySQL Server.
+2) Terminal 1: vào backend, chạy npm run dev.
+3) Terminal 2: vào ai-service và chạy uvicorn nếu cần dùng AI service.
+4) Terminal 3: vào frontend, chạy npm run dev.
+5) Mở http://localhost:3000.
+
+Nếu đã cài node_modules và môi trường Python thì không cần cài lại mỗi lần. Đóng terminal sẽ dừng dịch vụ tương ứng.
+
+11. LỖI THƯỜNG GẶP
+------------------
+- Trang không mở/lỗi kết nối API: kiểm tra backend có đang chạy và frontend/.env.local có đúng http://localhost:4000/api.
+- Lỗi kết nối MySQL/ECONNREFUSED: bật MySQL Server; kiểm tra DB_HOST, DB_PORT, DB_USER, DB_PASSWORD trong backend/.env.
+- Lỗi access denied MySQL: kiểm tra tài khoản, mật khẩu và quyền truy cập database.
+- Database/table not found: chạy database/schema.sql trước, sau đó chạy npm run migrate trong backend.
+- Không có sản phẩm: database mới chỉ có danh mục. Đăng ký gian hàng và tạo sản phẩm, hoặc dùng seed:demo chỉ trên database thử nghiệm theo bước 6.
+- AI service không khả dụng: kiểm tra Terminal 2 và http://localhost:8001/health. Có thể tiếp tục thử các phần khác; gợi ý dùng phương án dự phòng.
+- Gemini không trả lời: kiểm tra GEMINI_API_KEY riêng trong backend/.env và log backend; không chia sẻ key qua tài liệu này.
+- Cổng 3000/4000/8001 đã được dùng: dừng tiến trình cũ bằng Ctrl+C trong terminal đang chạy rồi khởi động lại. Không đóng tiến trình của thành viên khác nếu đang chia sẻ máy.
+- Giao diện cũ sau khi cập nhật: nhấn Ctrl+F5. Không chạy build để thay đổi output khi tiến trình dev đang phục vụ trên cùng thư mục.
+
+12. LỆNH TÓM TẮT
+----------------
+Backend:
+    cd backend
+    npm ci
+    npm run migrate
+    npm run dev
+
+AI service (tùy chọn):
+    cd ai-service
+    .\.venv\Scripts\python.exe -m uvicorn main:app --reload --port 8001
+
+Frontend:
+    cd frontend
+    npm ci
+    npm run dev
+
+Các địa chỉ:
+    Giao diện:      http://localhost:3000
+    API health:     http://localhost:4000/api/health
+    AI health:      http://localhost:8001/health
+    Admin:          http://localhost:3000/admin (cần tài khoản bootstrap)
+
+Nhắc lại: backend/.env và frontend/.env.local là cấu hình riêng trên từng máy, không gửi cho thành viên khác. File hướng dẫn này có thể gửi cùng source.
+

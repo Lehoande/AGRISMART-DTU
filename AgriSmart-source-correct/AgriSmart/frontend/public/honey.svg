@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="72" y1="46" x2="720" y2="764" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF9E9"/>
+      <stop offset="1" stop-color="#F5E5C5"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="287" y1="278" x2="516" y2="634" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD66B"/>
+      <stop offset=".5" stop-color="#E9A922"/>
+      <stop offset="1" stop-color="#B96E13"/>
+    </linearGradient>
+    <linearGradient id="honey" x1="337" y1="406" x2="466" y2="590" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE586"/>
+      <stop offset="1" stop-color="#F3B52F"/>
+    </linearGradient>
+    <filter id="shadow" x="221" y="198" width="358" height="509" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="17"/>
+    </filter>
+  </defs>
+  <path fill="url(#bg)" d="M0 0h800v800H0z"/>
+  <circle cx="143" cy="170" r="74" fill="#F7E7C4"/>
+  <circle cx="680" cy="629" r="104" fill="#F0DDB6"/>
+  <path d="M107 568c42-48 67-100 70-160m-37 125c-36-3-58-18-70-47m94-36c-1-31 12-56 38-71m411-191c-11 51-4 102 21 153m-1-107c30-12 54-10 75 8m-93 74c-28 5-50 21-64 50" stroke="#8DAD62" stroke-width="12" stroke-linecap="round"/>
+  <path d="M138 529c-26-27-28-52-5-76 30 20 32 45 5 76Zm268-347c-25-31-22-57 9-78 23 28 20 54-9 78Zm264 92c22-34 47-39 76-14-19 32-44 37-76 14Z" fill="#A9C47D"/>
+  <ellipse cx="400" cy="671" rx="170" ry="29" fill="#7B571A" opacity=".16" filter="url(#shadow)"/>
+  <rect x="321" y="226" width="158" height="79" rx="20" fill="#71431F"/>
+  <path d="M329 243h142m-132 21h122m-112 21h102" stroke="#A87539" stroke-width="8" stroke-linecap="round"/>
+  <path d="M300 294h200l35 84v189c0 34-27 61-61 61H326c-34 0-61-27-61-61V378l35-84Z" fill="url(#glass)" stroke="#A56617" stroke-width="10"/>
+  <path d="M274 415c35 12 63 7 84-15 30 22 59 22 88 0 28 21 57 21 86 0v167c0 32-26 58-58 58H326c-29 0-52-23-52-52V415Z" fill="url(#honey)"/>
+  <path d="M307 319h30v284h-30c-7 0-13-6-13-13V378l13-59Z" fill="#FFF6CF" opacity=".45"/>
+  <rect x="295" y="430" width="210" height="127" rx="18" fill="#FFF7E1" stroke="#B97118" stroke-width="7"/>
+  <path d="M344 467c15-18 35-28 56-28s41 10 56 28" stroke="#C68322" stroke-width="9" stroke-linecap="round"/>
+  <path d="M349 492h102" stroke="#D9A33C" stroke-width="7" stroke-linecap="round"/>
+  <text x="400" y="527" fill="#71431F" font-family="Arial,sans-serif" font-size="22" font-weight="700" text-anchor="middle" letter-spacing="3">MẬT ONG</text>
+  <path d="M400 378c-11 15-18 23-18 34a18 18 0 0 0 36 0c0-11-7-19-18-34Z" fill="#FFF1B9"/>
+  <path d="M180 285c12-18 32-24 57-17-5 25-20 38-47 39m427 262c11-20 31-28 56-21-3 26-17 40-44 43" stroke="#779853" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
