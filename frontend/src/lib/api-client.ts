@@ -194,6 +194,27 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
 }
 
 export async function loginApi(email: string, password: string) {
+  if (useDemoFallback()) {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !password) throw new Error("Vui lòng nhập email và mật khẩu.");
+    const demoSellerEmails = typeof window !== "undefined"
+      ? JSON.parse(window.localStorage.getItem("agrismart_demo_seller_emails") || "[]") as string[]
+      : [];
+    const role = demoSellerEmails.includes(normalizedEmail) || normalizedEmail.includes("seller") || normalizedEmail.includes("ban")
+      ? "seller"
+      : "customer";
+    const result = {
+      token: `demo-token-${Date.now()}`,
+      user: {
+        id: 1,
+        name: normalizedEmail.split("@")[0] || "Người dùng demo",
+        email: normalizedEmail,
+        role,
+      },
+    };
+    saveLoginToken(result.token);
+    return result;
+  }
   const result = await request<{ token?: string; user?: { id: number; name: string; email: string; role: string }; requires_two_factor?: boolean; challenge_token?: string }>("/auth/login", {
     method: "POST", body: JSON.stringify({ email, password }),
   });
@@ -238,12 +259,31 @@ export function disableTwoFactor(password: string, code: string) {
 }
 
 export function registerApi(payload: { name: string; email: string; password: string; phone: string }) {
+  if (useDemoFallback()) {
+    if (!payload.name.trim() || !payload.email.trim() || payload.password.length < 8) {
+      return Promise.reject(new Error("Vui lòng nhập đầy đủ thông tin và mật khẩu ít nhất 8 ký tự."));
+    }
+    return Promise.resolve({ id: Date.now(), message: "Tạo tài khoản demo thành công." });
+  }
   return request<{ id: number; message: string }>("/auth/register", {
     method: "POST", body: JSON.stringify(payload),
   });
 }
 
 export function registerSellerApi(payload: { name: string; email: string; password: string; phone: string; farm_name: string; farm_address: string; citizen_id?: string | null; citizen_card_date?: string | null; id_card_front_url?: string | null; id_card_back_url?: string | null }) {
+  if (useDemoFallback()) {
+    if (!payload.name.trim() || !payload.email.trim() || payload.password.length < 8 || !payload.farm_name.trim()) {
+      return Promise.reject(new Error("Vui lòng nhập đầy đủ thông tin người bán và mật khẩu ít nhất 8 ký tự."));
+    }
+    const normalizedEmail = payload.email.trim().toLowerCase();
+    const stored = typeof window !== "undefined"
+      ? JSON.parse(window.localStorage.getItem("agrismart_demo_seller_emails") || "[]") as string[]
+      : [];
+    if (typeof window !== "undefined" && !stored.includes(normalizedEmail)) {
+      window.localStorage.setItem("agrismart_demo_seller_emails", JSON.stringify([...stored, normalizedEmail]));
+    }
+    return Promise.resolve({ id: Date.now(), message: "Tạo gian hàng demo thành công." });
+  }
   return request<{ id: number; message: string }>('/auth/register-seller', { method: 'POST', body: JSON.stringify(payload) });
 }
 
