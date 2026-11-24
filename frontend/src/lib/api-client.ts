@@ -51,6 +51,14 @@ export type ApiProduct = {
 };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  if (
+    typeof window !== "undefined" &&
+    !["localhost", "127.0.0.1"].includes(window.location.hostname) &&
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(API_BASE_URL)
+  ) {
+    throw new Error("Backend chưa được triển khai công khai.");
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
