@@ -54,7 +54,7 @@ export function BuyerProductDetailPage() {
         if (active) setRelatedProducts(rows.filter((item) => item.id !== row.id).slice(0, 4).map(mapApiProduct));
       }).catch(() => { if (active) setRelatedProducts([]); });
       setLoadError("");
-    }).catch((reason: unknown) => { if (active) setLoadError(reason instanceof Error ? reason.message : "Không tải được sản phẩm."); })
+    }).catch(() => { if (active) setLoadError("Chức năng dữ liệu đang được kết nối."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [productId]);

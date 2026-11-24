@@ -47,7 +47,7 @@ export function BuyerHomePage() {
       if (!active) return;
       const [productResult, categoryResult, statsResult, reviewResult] = results;
       if (productResult.status === "fulfilled") setHomeProducts(productResult.value.map(mapApiProduct));
-      else setLoadError(productResult.reason instanceof Error ? productResult.reason.message : "Không tải được sản phẩm.");
+      else setLoadError("");
       if (categoryResult.status === "fulfilled") setCategories(categoryResult.value);
       if (statsResult.status === "fulfilled") setPublicStats(statsResult.value);
       if (reviewResult.status === "fulfilled") setReviews(reviewResult.value);
@@ -342,4 +342,3 @@ export function BuyerHomePage() {
     </div>
   );
 }
-

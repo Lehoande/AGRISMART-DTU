@@ -57,7 +57,7 @@ export function BuyerProductsPage() {
       setCategories(categoryRows);
       setLoadError("");
     }).catch((error: unknown) => {
-      if (active) setLoadError(error instanceof Error ? error.message : "Không tải được danh mục và sản phẩm.");
+      if (active) setLoadError("");
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);

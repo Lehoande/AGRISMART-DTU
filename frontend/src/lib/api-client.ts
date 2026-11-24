@@ -56,7 +56,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     !["localhost", "127.0.0.1"].includes(window.location.hostname) &&
     /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(API_BASE_URL)
   ) {
-    throw new Error("Backend chưa được triển khai công khai.");
+    throw new Error("Chức năng dữ liệu đang được kết nối.");
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
