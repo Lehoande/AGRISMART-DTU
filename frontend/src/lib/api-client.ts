@@ -10,11 +10,37 @@ export type ApiCategory = {
 
 export type PublicReview = { id: number; rating: number; comment: string; created_at: string; customer_name: string; product_name: string };
 
+const DEMO_CATEGORIES: ApiCategory[] = [
+  { id: 1, name: "Trái cây", slug: "trai-cay" },
+  { id: 2, name: "Rau củ", slug: "rau-cu" },
+  { id: 3, name: "Nông sản khác", slug: "nong-san-khac" },
+];
+
+const DEMO_PRODUCTS: ApiProduct[] = [
+  { id: 1, category_id: 1, name: "Dâu tây Đà Lạt", slug: "dau-tay-da-lat", description: "Dâu tây sạch, thu hoạch tại Đà Lạt.", price: 120000, unit: "kg", stock: 20, origin: "Đà Lạt, Lâm Đồng", farmer_name: "Nông trại Langbiang", image_url: "/logo.svg", traceability_code: "AGR-FRU-0101", category_name: "Trái cây", category_slug: "trai-cay", certification: "VietGAP", region: "Lâm Đồng", rating: 4.8, reviews: 24, is_active: true },
+  { id: 2, category_id: 2, name: "Rau cải xanh hữu cơ", slug: "rau-cai-xanh-huu-co", description: "Rau hữu cơ không thuốc bảo vệ thực vật.", price: 28000, unit: "bó", stock: 35, origin: "Lâm Đồng", farmer_name: "HTX Rau Xanh", image_url: "/logo.svg", traceability_code: "AGR-VEG-0102", category_name: "Rau củ", category_slug: "rau-cu", certification: "Organic", region: "Lâm Đồng", rating: 4.7, reviews: 18, is_active: true },
+  { id: 3, category_id: 3, name: "Nấm hương tươi", slug: "nam-huong-tuoi", description: "Nấm hương tươi, đóng gói vệ sinh.", price: 150000, unit: "kg", stock: 8, origin: "Lâm Đồng", farmer_name: "HTX Nấm Xanh", image_url: "/logo.svg", traceability_code: "AGR-OTH-0103", category_name: "Nông sản khác", category_slug: "nong-san-khac", certification: "VietGAP", region: "Lâm Đồng", rating: 4.6, reviews: 12, is_active: true },
+  { id: 4, category_id: 1, name: "Cam sành Đồng Nai", slug: "cam-sanh-dong-nai", description: "Cam sành ngọt, nhiều nước.", price: 45000, unit: "kg", stock: 28, origin: "Đồng Nai", farmer_name: "Vườn Cam Đồng Nai", image_url: "/logo.svg", traceability_code: "AGR-FRU-0104", category_name: "Trái cây", category_slug: "trai-cay", certification: "GlobalGAP", region: "Đồng Nam Bộ", rating: 4.5, reviews: 9, is_active: true },
+];
+
+const DEMO_REVIEWS: PublicReview[] = [
+  { id: 1, rating: 5, comment: "Sản phẩm tươi, đóng gói cẩn thận.", created_at: "2026-11-24T08:00:00.000Z", customer_name: "Nguyễn Minh", product_name: "Dâu tây Đà Lạt" },
+  { id: 2, rating: 5, comment: "Rau sạch và giao hàng nhanh.", created_at: "2026-11-24T09:00:00.000Z", customer_name: "Trần Lan", product_name: "Rau cải xanh hữu cơ" },
+];
+
+function useDemoFallback(): boolean {
+  return typeof window !== "undefined" &&
+    !["localhost", "127.0.0.1"].includes(window.location.hostname) &&
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(API_BASE_URL);
+}
+
 export function getPublicStats() {
+  if (useDemoFallback()) return Promise.resolve({ buyers: 128, sellers: 42, products: DEMO_PRODUCTS.length, reviews: DEMO_REVIEWS.length });
   return request<{ buyers: number; sellers: number; products: number; reviews: number }>("/public/stats");
 }
 
 export function getPublicReviews() {
+  if (useDemoFallback()) return Promise.resolve(DEMO_REVIEWS);
   return request<PublicReview[]>("/public/reviews");
 }
 
@@ -51,14 +77,6 @@ export type ApiProduct = {
 };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  if (
-    typeof window !== "undefined" &&
-    !["localhost", "127.0.0.1"].includes(window.location.hostname) &&
-    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(API_BASE_URL)
-  ) {
-    throw new Error("Chức năng dữ liệu đang được kết nối.");
-  }
-
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
@@ -86,6 +104,7 @@ export function getApiHealth() {
 }
 
 export function getApiCategories() {
+  if (useDemoFallback()) return Promise.resolve(DEMO_CATEGORIES);
   return request<ApiCategory[]>("/categories");
 }
 
@@ -106,6 +125,20 @@ export function getApiProducts(params: {
   maxPrice?: number;
   sort?: "price_asc" | "price_desc" | "name";
 } = {}) {
+  if (useDemoFallback()) {
+    let rows = [...DEMO_PRODUCTS];
+    if (params.category) rows = rows.filter((row) => row.category_slug === params.category);
+    if (params.search) {
+      const search = params.search.toLowerCase();
+      rows = rows.filter((row) => row.name.toLowerCase().includes(search));
+    }
+    if (params.minPrice !== undefined) rows = rows.filter((row) => row.price >= params.minPrice!);
+    if (params.maxPrice !== undefined) rows = rows.filter((row) => row.price <= params.maxPrice!);
+    if (params.sort === "price_asc") rows.sort((a, b) => a.price - b.price);
+    if (params.sort === "price_desc") rows.sort((a, b) => b.price - a.price);
+    if (params.sort === "name") rows.sort((a, b) => a.name.localeCompare(b.name, "vi"));
+    return Promise.resolve(rows);
+  }
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== "") query.set(key, String(value));
@@ -293,6 +326,11 @@ export function addApiCartItem(productId: number, quantity: number) {
 }
 
 export function getApiProduct(productId: string | number) {
+  if (useDemoFallback()) {
+    const row = DEMO_PRODUCTS.find((item) => String(item.id) === String(productId));
+    if (row) return Promise.resolve(row);
+    return Promise.reject(new Error("Không tìm thấy sản phẩm."));
+  }
   return request<ApiProduct & { rating: number; reviews: number; certification: string | null; region: string | null; harvest_date: string | null; storage_condition: string | null }>(`/products/${encodeURIComponent(String(productId))}`);
 }
 export function getQrTrace(code: string) { return request<Record<string, unknown>>(`/qr/trace/${encodeURIComponent(code)}`); }
