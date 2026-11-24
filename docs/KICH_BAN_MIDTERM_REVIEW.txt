@@ -1,0 +1,126 @@
+KỊCH BẢN MIDTERM REVIEW – AGRISMART AI
+=====================================
+
+Gợi ý: Có thể đọc gần nguyên văn. Thời lượng phần trình bày chính khoảng 4–6 phút, chưa tính demo và hỏi đáp.
+
+
+1. MỞ ĐẦU
+---------
+
+Em xin chào thầy cô và các bạn. Nhóm em xin giới thiệu AgriSmart AI – một nền tảng kết nối người mua với các gian hàng nông sản, đồng thời hỗ trợ quản lý đơn hàng và tra cứu thông tin nguồn gốc sản phẩm.
+
+Ý tưởng của dự án xuất phát từ nhu cầu giúp người mua tìm sản phẩm thuận tiện hơn, biết rõ thông tin do gian hàng cung cấp trước khi đặt hàng, và giúp người bán có một nơi để quản lý sản phẩm, đơn hàng và hoạt động kinh doanh.
+
+Trong buổi review hôm nay, em sẽ trình bày các vai trò sử dụng chính, những luồng chức năng quan trọng và một số điểm kỹ thuật của hệ thống.
+
+
+2. MỤC TIÊU VÀ ĐỐI TƯỢNG SỬ DỤNG
+---------------------------------
+
+Hệ thống có ba nhóm người dùng chính:
+
+- Người mua: tìm và lọc nông sản, xem thông tin sản phẩm, quản lý giỏ hàng, đặt hàng, theo dõi đơn, gửi đánh giá sau khi đơn hoàn tất và sử dụng các công cụ AI hỗ trợ lựa chọn.
+- Người bán: đăng ký gian hàng, chờ quản trị viên duyệt, sau đó quản lý sản phẩm, thông tin lô hàng, tồn kho, đơn hàng, doanh thu, đánh giá và khiếu nại liên quan đến gian hàng.
+- Quản trị viên và nhân viên được cấp quyền: theo dõi số liệu, xử lý đơn hàng, duyệt gian hàng và quản lý các dữ liệu vận hành theo quyền được phân công.
+
+Gian hàng mới ở trạng thái chờ xác minh sẽ chưa được phép đăng sản phẩm cho đến khi được duyệt. Cách này giúp quy trình bán hàng có bước kiểm tra từ phía quản trị viên.
+
+
+3. CÁC CHỨC NĂNG CHÍNH
+-----------------------
+
+3.1. Dành cho người mua
+
+Người mua có thể tìm sản phẩm bằng từ khóa và lọc theo danh mục, vùng, chứng nhận được khai báo và mức giá. Khi mở chi tiết sản phẩm, hệ thống hiển thị giá, đơn vị bán, tồn kho, hình ảnh, thông tin gian hàng và các trường truy xuất mà người bán đã cung cấp.
+
+Người mua có thể thêm sản phẩm vào giỏ, điều chỉnh số lượng, áp dụng mã giảm giá nếu mã còn hiệu lực, xem tạm tính, phí giao hàng và tổng tiền trước khi đặt hàng.
+
+Khi checkout, người mua nhập thông tin nhận hàng và chọn COD hoặc chuyển khoản ngân hàng. Hệ thống tạo đơn, ghi nhận các mặt hàng và tổng tiền, rồi cho phép theo dõi trạng thái đơn. Người mua có thể hủy đơn khi đơn còn ở trạng thái chờ xác nhận. Sau khi đơn hoàn tất, người mua có thể chấm sao và viết nhận xét cho sản phẩm trong đơn.
+
+3.2. Thanh toán chuyển khoản
+
+Với chuyển khoản, trang xác nhận hiển thị QR có điền sẵn số tiền theo tổng tiền đơn thực tế, bao gồm phí giao hàng và giảm giá nếu có. Nội dung chuyển khoản cũng được điền sẵn theo mã đơn để hệ thống đối chiếu.
+
+Người mua quét QR trong ứng dụng ngân hàng, kiểm tra thông tin rồi xác nhận chuyển tiền. Trong môi trường hiện tại, hệ thống có luồng nhận webhook SePay để tự đối soát; để luồng tự động hoạt động cần cấu hình URL backend công khai dùng HTTPS và thông tin bảo mật webhook. Nếu webhook chưa được kết nối hoặc giao dịch không khớp, đơn vẫn cần được quản trị viên kiểm tra và xác nhận thủ công.
+
+3.3. Dành cho người bán
+
+Sau khi gian hàng được duyệt, người bán có thể tạo và cập nhật sản phẩm; khai báo nơi thu hoạch, vùng trồng, ngày thu hoạch, điều kiện bảo quản và mã truy xuất; xem tồn kho; quản lý các đơn có sản phẩm của gian hàng; theo dõi doanh thu và xem đánh giá của khách hàng.
+
+Các trường chứng nhận và nguồn gốc trên website phản ánh nội dung gian hàng khai báo. Hệ thống không tự chứng minh sản phẩm đã được cơ quan độc lập kiểm định.
+
+3.4. AI hỗ trợ
+
+AI hỗ trợ người mua bằng cách gợi ý sản phẩm theo dữ liệu sản phẩm, danh mục ưu tiên và tương tác sẵn có. Với người bán, AI hỗ trợ soạn nội dung và rà soát thông tin sản phẩm để chỉ ra các trường còn thiếu hoặc cảnh báo cần xem lại.
+
+Kết quả AI có tính tham khảo. AI không thay thế kiểm định nông sản, không xác thực chứng nhận và không tự xác nhận nguồn gốc. Khi dịch vụ AI không phản hồi, hệ thống có phương án xếp hạng dự phòng theo danh mục và tình trạng hàng còn.
+
+3.5. Quản trị
+
+Trang quản trị được tách khỏi giao diện cửa hàng và có form đăng nhập riêng tại đường dẫn /admin. Quản trị viên có thể xem dashboard và đơn hàng, duyệt hồ sơ gian hàng, quản lý tài khoản và vai trò, bật hoặc ẩn sản phẩm, quản lý danh mục, theo dõi và điều chỉnh tồn kho, xem thông báo và kiểm duyệt đánh giá.
+
+Quyền quan trọng được kiểm tra tại API phía máy chủ; giao diện chỉ hiển thị thao tác phù hợp với vai trò đang đăng nhập.
+
+3.6. QR truy xuất
+
+Người dùng có thể dùng trang Quét QR để mở camera trên trình duyệt hỗ trợ, hoặc nhập/dán mã truy xuất. Mã hợp lệ sẽ hiển thị thông tin sản phẩm và các trường nguồn gốc đã khai báo; mã không tồn tại sẽ được báo không hợp lệ.
+
+
+4. LUỒNG DEMO GỢI Ý
+-------------------
+
+Nếu thời gian trình bày có giới hạn, nhóm có thể demo theo thứ tự sau:
+
+1. Mở trang cửa hàng và tìm một sản phẩm.
+2. Mở chi tiết sản phẩm, chỉ ra nơi thu hoạch, vùng trồng, giá và mã truy xuất.
+3. Thêm vào giỏ, thay đổi số lượng và cho xem tổng tiền/phí giao hàng.
+4. Mở checkout, chỉ ra lựa chọn COD/chuyển khoản và phần phí được hiển thị trước khi đặt.
+5. Nếu dùng chuyển khoản, tạo đơn thử để cho xem QR có tổng tiền và nội dung mã đơn điền sẵn. Không cần thực hiện chuyển khoản thật trong buổi demo.
+6. Mở trang /admin bằng tài khoản quản trị được nhóm chuẩn bị để xem đơn hàng, duyệt gian hàng hoặc trang quản lý hệ thống.
+7. Nếu còn thời gian, dùng trang Quét QR với mã sản phẩm hợp lệ đã có trong dữ liệu demo.
+
+Trước buổi review, nên đăng nhập sẵn ở các vai trò cần demo và chuẩn bị mã sản phẩm/lô có dữ liệu. Không chiếu mật khẩu, token, khóa API, secret webhook hoặc thông tin tài khoản ngân hàng lên màn hình.
+
+
+5. TÓM TẮT KIẾN TRÚC
+--------------------
+
+Frontend được xây dựng bằng Next.js và React. Backend cung cấp API bằng Node.js/Express. Dữ liệu ứng dụng được lưu trong MySQL. Một dịch vụ AI riêng hỗ trợ gợi ý và nội dung sản phẩm. Frontend gọi API để lấy dữ liệu vận hành; backend chịu trách nhiệm xác thực, phân quyền, xử lý nghiệp vụ đơn hàng và lưu dữ liệu.
+
+Một số kiểm soát quan trọng gồm: mật khẩu được băm trước khi lưu; API giới hạn dữ liệu theo tài khoản đăng nhập; thao tác đặt hàng kiểm tra tồn kho trong transaction; khóa idempotency giúp tránh tạo trùng đơn nếu người dùng gửi lại yêu cầu checkout.
+
+
+6. CÂU HỎI THƯỜNG GẶP VÀ GỢI Ý TRẢ LỜI
+---------------------------------------
+
+Hỏi: AgriSmart giải quyết vấn đề gì?
+
+Đáp: Dự án gom trải nghiệm tìm và mua nông sản, thông tin gian hàng, theo dõi đơn và tra cứu QR vào một nền tảng; phía người bán có các công cụ quản lý bán hàng và tồn kho.
+
+Hỏi: Thông tin nguồn gốc có được xác minh độc lập không?
+
+Đáp: Hiện tại các trường truy xuất do gian hàng khai báo và được hiển thị minh bạch là dữ liệu khai báo. QR giúp tra cứu dữ liệu đó, không tự chứng minh tính xác thực. Nếu triển khai thực tế, nhóm cần bổ sung quy trình kiểm duyệt giấy tờ hoặc tích hợp đơn vị xác minh.
+
+Hỏi: Chuyển khoản có tự động xác nhận không?
+
+Đáp: Backend có endpoint webhook SePay và kiểm tra giao dịch theo tài khoản nhận, số tiền, mã đơn và chữ ký webhook. Muốn tự động chạy trong môi trường thật cần cấu hình webhook trên SePay và URL HTTPS công khai trỏ tới backend. Khi chưa có callback hợp lệ, admin vẫn phải xác nhận thủ công để tránh ghi nhận nhầm tiền.
+
+Hỏi: AI có thay thế người kiểm định không?
+
+Đáp: Không. AI chỉ hỗ trợ gợi ý và rà soát nội dung đã nhập; không xác nhận chất lượng, chứng nhận hay nguồn gốc sản phẩm.
+
+Hỏi: Nếu khách nhấn đặt hàng hai lần thì sao?
+
+Đáp: Checkout sử dụng khóa idempotency để nhận diện yêu cầu gửi lại, kết hợp transaction và khóa tồn kho ở backend. Vì vậy cùng một yêu cầu được gửi lại sẽ trả về đơn đã tạo thay vì tạo thêm đơn mới.
+
+Hỏi: Phần nào cần cấu hình khi triển khai?
+
+Đáp: Cần cấu hình MySQL, JWT secret, URL frontend/backend và các biến môi trường tích hợp. Tự đối soát SePay cần thêm URL callback HTTPS công khai và secret webhook. AI có thể cần khóa API tương ứng nếu muốn dùng mô hình Gemini.
+
+
+7. KẾT THÚC
+-----------
+
+Trên đây là phần giới thiệu AgriSmart AI. Qua dự án, nhóm tập trung kết nối quy trình từ tìm sản phẩm, đặt hàng, thanh toán, quản lý gian hàng đến truy xuất thông tin và hỗ trợ AI. Trong giai đoạn tiếp theo, nhóm hướng tới kiểm thử đầu-cuối với dữ liệu và cấu hình triển khai thực tế, hoàn thiện quy trình xác minh thông tin nguồn gốc và theo dõi độ ổn định của webhook thanh toán.
+
+Em xin cảm ơn thầy cô và các bạn đã theo dõi. Nhóm em sẵn sàng trả lời câu hỏi.
